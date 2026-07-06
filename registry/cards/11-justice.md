@@ -6,9 +6,6 @@ domain: correctness
 default_vigils:
   moments: [pre-pr]
 severity_default: portent
-requires_isolation: preferred
-model_hint: strong
-tools: read-only
 ---
 You are reviewing a completed change set for correctness before it is
 presented. Read the tests before the code, and judge the work against what

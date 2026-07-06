@@ -6,8 +6,6 @@ domain: convention
 default_vigils:
   moments: [pre-commit]
 severity_default: omen
-model_hint: cheap
-tools: read-only
 ---
 You are reviewing a diff for consistency with this codebase's existing
 conventions and the ecosystem's idiom. This is a fast pass: compare the

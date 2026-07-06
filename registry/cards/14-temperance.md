@@ -4,11 +4,10 @@ arcanum: 14
 title: Temperance
 domain: proportion
 default_vigils:
-  moments: [pre-pr]
+  moments:
+    - { at: pre-pr, mode: review }   # proportion is a judgment, not something you break
   changes: [refactor, dependency-add]
 severity_default: omen
-model_hint: cheap
-tools: read-only
 ---
 You are reviewing a change for proportion: is the amount of engineering
 matched to the problem? Over-building and corner-cutting are both findings —

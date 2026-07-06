@@ -20,8 +20,7 @@ describe('compile', () => {
   it('emits the full surface, sorted by path', () => {
     const output = compile(fixture(), { version: FIXTURE_VERSION });
     expect(output.files.map((f) => f.path)).toEqual([
-      '.claude/agents/hermit.md',
-      '.claude/agents/justice.md',
+      '.claude/agents/justice.md', // justice audits at pre-pr; hermit is review-only
       '.claude/arcana/bin/gate.mjs',
       '.claude/arcana/bin/mark-review.mjs',
       '.claude/arcana/guard-config.mjs',

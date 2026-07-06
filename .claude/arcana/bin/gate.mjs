@@ -111,7 +111,9 @@ if (moment === 'pre-commit') {
 }
 
 for (const gate of gates) {
-  if (!gate.moments.includes(moment)) continue;
+  const binding = gate.moments.find((m) => m.at === moment);
+  if (!binding) continue;
+  const verb = binding.mode === 'audit' ? 'adversarial audit' : 'review';
 
   const scoped = gate.globs.length > 0;
   const basis = moment === 'pre-commit' ? 'staged' : 'branch';
@@ -128,7 +130,9 @@ for (const gate of gates) {
     process.stderr.write(
       'arcana: could not determine the diff for the ' +
         gate.domain +
-        ' review gate (no merge base?) — allowing, but the review is still required.\n',
+        ' ' +
+        verb +
+        ' gate (no merge base?) — allowing, but it is still required.\n',
     );
     continue;
   }
@@ -139,20 +143,25 @@ for (const gate of gates) {
 
   const marker = readMarker(gate.id);
   if (!marker || marker[basis] !== expected) {
+    const how =
+      binding.mode === 'audit'
+        ? 'dispatch the ' + gate.id + ' agent to try to break the ' + (basis === 'staged' ? 'staged diff' : 'branch diff')
+        : 'review the ' + (basis === 'staged' ? 'staged diff' : 'branch diff') + ' against ' + gate.reference;
     block(
       'Blocked: these changes require a ' +
         gate.domain +
-        ' review before this step. Review the ' +
-        (basis === 'staged' ? 'staged diff' : 'branch diff') +
-        ' against ' +
-        gate.reference +
-        ' (or dispatch its review agent), resolve findings per its rules, then record it:\n' +
+        ' ' +
+        verb +
+        ' before this step. ' +
+        how.charAt(0).toUpperCase() +
+        how.slice(1) +
+        ', resolve findings per its rules, then record it:\n' +
         '  node .claude/arcana/bin/mark-review.mjs ' +
         gate.id +
-        '\nand retry. If the diff changed since the last review, review the new diff.',
+        '\nand retry. If the diff changed since the last time, run it again.',
     );
   }
 }
 
 process.exit(0);
-// arcana:hash:sha256 7dcaf365eaa5c4afcb94134d97267e034ef0d956b9cf7d8497d70daa4af287ae
+// arcana:hash:sha256 f47f9dfc353a5e633b312258b415a7de110134010cf7de48586afe67ba85ade5

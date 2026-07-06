@@ -1,6 +1,6 @@
 import { ArcanaError } from '../errors.js';
 import type { Project } from '../loader/index.js';
-import { agentCards, emitAgents } from '../emitters/claude/agents.js';
+import { auditCards, emitAgents } from '../emitters/claude/agents.js';
 import { emitCore } from '../emitters/claude/core.js';
 import {
   emitHooks,
@@ -37,14 +37,10 @@ export function compile(project: Project, options: CompileOptions): BuildOutput 
   const hooksEnabled =
     project.deck.enforcement.claude_hooks &&
     (gateEntries(project).length > 0 || gatedBindingTexts(project).size > 0);
-  const agents = agentCards(project);
-  const agentIds = new Set(agents.map((c) => c.card.meta.id));
-  const adversarialIds = new Set(
-    agents.filter((c) => c.card.meta.posture === 'adversarial').map((c) => c.card.meta.id),
-  );
+  const hasAudits = auditCards(project).length > 0;
   const gatedTexts = hooksEnabled ? gatedBindingTexts(project) : new Set<string>();
 
-  const core = stamp(emitCore(project, { version, gatedTexts, agentIds, adversarialIds }));
+  const core = stamp(emitCore(project, { version, gatedTexts, hasAudits }));
   const budget = checkBudget(core);
   if (!budget.ok) {
     throw new ArcanaError(formatOverageReport(budget));

@@ -1,10 +1,11 @@
 import type { ResolvedCard } from '../../loader/index.js';
+import type { Mode } from '../../types.js';
 import { SEVERITY_LABELS } from '../../types.js';
 import { severityContractLines } from './shared.js';
 
-function executionRules(card: ResolvedCard): string[] {
-  if (card.card.meta.tools === 'execute') {
-    // Adversarial auditors run the code on purpose; contain it instead.
+function executionRules(mode: Mode): string[] {
+  if (mode === 'audit') {
+    // An audit runs the code on purpose to prove a break; contain it instead.
     return [
       'You may run the project and its tests to demonstrate a break — that is',
       'your job — but treat the code as untrusted while doing it: run it only',
@@ -19,12 +20,12 @@ function executionRules(card: ResolvedCard): string[] {
   ];
 }
 
-function postureRules(card: ResolvedCard): string[] {
-  if (card.card.meta.posture !== 'adversarial') return [];
+function reproductionRules(mode: Mode): string[] {
+  if (mode !== 'audit') return [];
   return [
     'Every finding must come with a concrete reproduction: the exact input,',
     'command, call sequence, or failing test that demonstrates the break.',
-    'A claim you attacked but could not break is reported as "attempted, held" —',
+    'A concern you attacked but could not break is reported as "attempted, held" —',
     'never as an endorsement. Do not soften findings to be agreeable; an',
     'unreported break is a failure of this audit.',
     '',
@@ -32,11 +33,11 @@ function postureRules(card: ResolvedCard): string[] {
 }
 
 /**
- * The compiled reviewer checklist for a card: persona body plus the
- * reporting contract. Shared by the arcana/ reference and subagent bodies
- * so the two can never drift.
+ * The compiled checklist for a card at a given intensity. The persona's
+ * concerns (the body) are identical across modes; the mode decides the framing:
+ * a review checks the concerns, an audit attacks them and must prove breaks.
  */
-export function buildChecklist(card: ResolvedCard): string {
+export function buildChecklist(card: ResolvedCard, mode: Mode): string {
   const id = card.card.meta.id;
   const defaultLabel = SEVERITY_LABELS[card.card.meta.severity_default];
   return [
@@ -50,12 +51,12 @@ export function buildChecklist(card: ResolvedCard): string {
     '',
     `Unless a finding is clearly lesser or greater, treat it as a ${defaultLabel}.`,
     '',
-    ...postureRules(card),
+    ...reproductionRules(mode),
     `A comment \`// ward(${id}): <reason>\` on or above a line marks a finding there as`,
     'deliberately accepted: honor it while the line stays untouched, and do not',
     're-flag it. If the change you are reviewing touches a warded line, the',
     'suppression lapses — re-evaluate that finding fresh.',
     '',
-    ...executionRules(card),
+    ...executionRules(mode),
   ].join('\n');
 }

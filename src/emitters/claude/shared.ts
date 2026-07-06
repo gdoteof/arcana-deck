@@ -27,34 +27,35 @@ export function formatGlobs(globs: string[]): string {
 }
 
 /**
- * One routing line per active vigil, in plain language. Moment vigils are
- * conditioned on the card's globs when both are present; glob vigils without
- * a moment become continuous "when working in" instructions. Cards emitted
- * as subagents route to the agent instead of the inline checklist.
+ * One routing line per active vigil, in plain language. Review vigils point at
+ * the persona's checklist for self-review; audit vigils dispatch the persona
+ * as an isolated agent that tries to break the change.
  */
-export function cardRoutingLines(card: ResolvedCard, agentIds: ReadonlySet<string>): string[] {
+export function cardRoutingLines(card: ResolvedCard): string[] {
   const meta = card.card.meta;
-  const review = agentIds.has(meta.id)
-    ? (what: string) => `have the \`${meta.id}\` agent review ${what}`
-    : (what: string) => `review ${what} against ${cardReferencePath(card)}`;
   const domain = meta.domain;
+  const reviewAgainst = (what: string) => `review ${what} against ${cardReferencePath(card)}`;
+  const auditWith = (what: string) => `have the \`${meta.id}\` agent try to break ${what}`;
   const { globs, moments, changes } = card.vigils;
   const lines: string[] = [];
-  for (const moment of moments) {
-    const when = MOMENT_PHRASES[moment];
+  for (const { at, mode } of moments) {
+    const when = MOMENT_PHRASES[at];
+    const act = mode === 'audit' ? auditWith : reviewAgainst;
+    const hasGlobs = globs.length > 0 && mode === 'review';
     lines.push(
-      globs.length > 0
-        ? `- ${when}: if the changes touch ${formatGlobs(globs)}, ${review('them')} (${domain}).`
-        : `- ${when}: ${review('the changes')} (${domain}).`,
+      hasGlobs
+        ? `- ${when}: if the changes touch ${formatGlobs(globs)}, ${act('them')} (${domain}).`
+        : `- ${when}: ${act('the changes')} (${domain}).`,
     );
   }
-  if (moments.length === 0 && globs.length > 0) {
+  const hasReviewMoment = moments.some((m) => m.mode === 'review');
+  if (!hasReviewMoment && globs.length > 0) {
     lines.push(
-      `- When working in files matching ${formatGlobs(globs)}: ${review('your changes')} (${domain}) before finishing.`,
+      `- When working in files matching ${formatGlobs(globs)}: ${reviewAgainst('your changes')} (${domain}) before finishing.`,
     );
   }
   for (const change of changes) {
-    lines.push(`- When ${CHANGE_TYPE_PHRASES[change]}: ${review('the change')} (${domain}).`);
+    lines.push(`- When ${CHANGE_TYPE_PHRASES[change]}: ${reviewAgainst('the change')} (${domain}).`);
   }
   return lines;
 }

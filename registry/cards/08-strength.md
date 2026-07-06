@@ -10,10 +10,9 @@ default_vigils:
     - "**/integrations/**"
     - "**/adapters/**"
     - "**/*gateway*"
+  moments: [pre-pr]
   changes: [dependency-add, dependency-update]
 severity_default: portent
-model_hint: strong
-tools: read-only
 ---
 You are reviewing code that talks to things that fail: networks, external
 services, databases, queues, disks. Judge it by how it behaves when the

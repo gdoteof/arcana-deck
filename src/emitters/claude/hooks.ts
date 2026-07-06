@@ -34,20 +34,24 @@ interface GateEntry {
   domain: string;
   reference: string;
   globs: string[];
-  moments: string[];
+  /** Gated moments with their intensity, so the block message names the right step. */
+  moments: Array<{ at: string; mode: string }>;
 }
 
 /**
  * Cards whose moment vigils are deterministically gated. Pre-commit gates
- * require globs (gating every commit on a whole-diff review would be
- * punishing); pre-push/pre-pr gates review the branch diff, globs optional.
+ * require globs (gating every commit on a whole-diff pass would be punishing);
+ * pre-push/pre-pr gates use the branch diff, globs optional. The mode rides
+ * along so the message says "audit" or "review" as appropriate.
  */
 export function gateEntries(project: Project): GateEntry[] {
   const entries: GateEntry[] = [];
   for (const card of project.cards) {
     const gatedMoments = card.vigils.moments.filter(
       (m) =>
-        (m === 'pre-commit' && card.vigils.globs.length > 0) || m === 'pre-push' || m === 'pre-pr',
+        (m.at === 'pre-commit' && card.vigils.globs.length > 0) ||
+        m.at === 'pre-push' ||
+        m.at === 'pre-pr',
     );
     if (gatedMoments.length === 0) continue;
     entries.push({
@@ -55,7 +59,7 @@ export function gateEntries(project: Project): GateEntry[] {
       domain: card.card.meta.domain,
       reference: cardReferencePath(card),
       globs: card.vigils.globs,
-      moments: gatedMoments,
+      moments: gatedMoments.map((m) => ({ at: m.at, mode: m.mode })),
     });
   }
   return entries;
@@ -281,7 +285,9 @@ if (moment === 'pre-commit') {
 }
 
 for (const gate of gates) {
-  if (!gate.moments.includes(moment)) continue;
+  const binding = gate.moments.find((m) => m.at === moment);
+  if (!binding) continue;
+  const verb = binding.mode === 'audit' ? 'adversarial audit' : 'review';
 
   const scoped = gate.globs.length > 0;
   const basis = moment === 'pre-commit' ? 'staged' : 'branch';
@@ -298,7 +304,9 @@ for (const gate of gates) {
     process.stderr.write(
       'arcana: could not determine the diff for the ' +
         gate.domain +
-        ' review gate (no merge base?) — allowing, but the review is still required.\\n',
+        ' ' +
+        verb +
+        ' gate (no merge base?) — allowing, but it is still required.\\n',
     );
     continue;
   }
@@ -309,17 +317,22 @@ for (const gate of gates) {
 
   const marker = readMarker(gate.id);
   if (!marker || marker[basis] !== expected) {
+    const how =
+      binding.mode === 'audit'
+        ? 'dispatch the ' + gate.id + ' agent to try to break the ' + (basis === 'staged' ? 'staged diff' : 'branch diff')
+        : 'review the ' + (basis === 'staged' ? 'staged diff' : 'branch diff') + ' against ' + gate.reference;
     block(
       'Blocked: these changes require a ' +
         gate.domain +
-        ' review before this step. Review the ' +
-        (basis === 'staged' ? 'staged diff' : 'branch diff') +
-        ' against ' +
-        gate.reference +
-        ' (or dispatch its review agent), resolve findings per its rules, then record it:\\n' +
+        ' ' +
+        verb +
+        ' before this step. ' +
+        how.charAt(0).toUpperCase() +
+        how.slice(1) +
+        ', resolve findings per its rules, then record it:\\n' +
         '  node .claude/arcana/bin/mark-review.mjs ' +
         gate.id +
-        '\\nand retry. If the diff changed since the last review, review the new diff.',
+        '\\nand retry. If the diff changed since the last time, run it again.',
     );
   }
 }

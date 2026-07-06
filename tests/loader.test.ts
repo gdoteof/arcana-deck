@@ -32,7 +32,7 @@ describe('loadProject', () => {
     expect(project.cards).toHaveLength(1);
     expect(project.cards[0]!.vigils).toEqual({
       globs: ['**/auth/**'],
-      moments: ['pre-commit'],
+      moments: [{ at: 'pre-commit', mode: 'review' }],
       changes: ['dependency-add'],
     });
     expect(project.rites[0]!.changeTypes).toEqual(['schema']);
@@ -48,9 +48,33 @@ describe('loadProject', () => {
     const project = loadProject(root, { registryDir: registry() });
     expect(project.cards[0]!.vigils).toEqual({
       globs: ['src/payments/**'],
-      moments: ['pre-commit'],
+      moments: [{ at: 'pre-commit', mode: 'review' }],
       changes: ['dependency-add'],
     });
+  });
+
+  it('normalizes moments to their default mode (pre-pr is an audit)', () => {
+    const card = VALID_CARD.replace('moments: [pre-commit]', 'moments: [pre-commit, pre-pr]');
+    const reg = tree({
+      'cards/09-hermit.md': card,
+      'rites/pentacles/migration.md': VALID_RITE,
+      'precepts.md': VALID_PRECEPTS,
+    });
+    const root = tree({ 'deck.yaml': 'version: 1\ncards:\n  - id: hermit\n' });
+    const project = loadProject(root, { registryDir: reg });
+    expect(project.cards[0]!.vigils.moments).toEqual([
+      { at: 'pre-commit', mode: 'review' },
+      { at: 'pre-pr', mode: 'audit' },
+    ]);
+  });
+
+  it('honors an explicit per-binding mode override in the deck', () => {
+    const root = tree({
+      'deck.yaml':
+        'version: 1\ncards:\n  - id: hermit\n    vigils:\n      moments:\n        - { at: pre-pr, mode: review }\n',
+    });
+    const project = loadProject(root, { registryDir: registry() });
+    expect(project.cards[0]!.vigils.moments).toEqual([{ at: 'pre-pr', mode: 'review' }]);
   });
 
   it('applies bind_to overrides from deck.yaml', () => {

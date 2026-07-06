@@ -4,26 +4,26 @@ import { makeTree, VALID_CARD, VALID_PRECEPTS, VALID_RITE } from '../helpers.js'
 export const FIXTURE_VERSION = '0.0.0-test';
 
 /**
- * A representative project: one card with glob+moment+change vigils, one card
- * with a pre-pr moment only, one rite, two conduct bindings (one critical).
+ * A persona whose default pre-pr vigil resolves to audit mode (no privileges
+ * on the card itself — the mode comes from the moment).
  */
-export const ADVERSARIAL_CARD = `---
+export const DEVIL_CARD = `---
 id: devil
-domain: adversarial abuse
+domain: abuse resistance
 default_vigils:
   moments: [pre-pr]
   globs: ["**/handlers/**"]
 severity_default: portent
-requires_isolation: preferred
-model_hint: strong
-tools: execute
-posture: adversarial
 ---
-You red-team this change. Try to break it and prove the break.
+The abuse-resistance lens: how does this hold up in bad faith?
 
 - Feed it malicious input.
 `;
 
+/**
+ * A representative project: hermit (glob+moment(review)+change vigils),
+ * justice (pre-pr, resolves to audit), one rite, two conduct bindings.
+ */
 export function fixtureProject(deckYaml?: string): { project: Project; roots: string[] } {
   const justice = `---
 id: justice
@@ -33,8 +33,6 @@ domain: correctness
 default_vigils:
   moments: [pre-pr]
 severity_default: portent
-requires_isolation: preferred
-model_hint: strong
 ---
 You are reviewing the full change set for correctness.
 
@@ -43,7 +41,7 @@ You are reviewing the full change set for correctness.
   const registry = makeTree({
     'cards/09-hermit.md': VALID_CARD,
     'cards/11-justice.md': justice,
-    'cards/15-devil.md': ADVERSARIAL_CARD,
+    'cards/15-devil.md': DEVIL_CARD,
     'rites/pentacles/migration.md': VALID_RITE,
     'precepts.md': VALID_PRECEPTS,
   });

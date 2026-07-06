@@ -28,34 +28,38 @@ Before starting a non-trivial task, read arcana/precepts.md and follow it.
 - When restructuring existing code without changing its behavior: read and follow arcana/rites/refactor.md before starting.
 - Before adding a new dependency, or when vendoring third-party code: read and follow arcana/rites/dependency.md before starting.
 
-## Required reviews
+## Required reviews and audits
 
-- Before each commit: if the changes touch `**/auth/**` or `**/*secret*` or `**/*token*` or `**/*credential*` or `**/middleware/**` or `**/session/**`, have the `hermit` agent review them (security).
-- When adding a new dependency: have the `hermit` agent review the change (security).
-- Before opening a pull request: have the `justice` agent review the changes (correctness).
+- Before opening a pull request: have the `hermit` agent try to break the changes (security).
+- When working in files matching `**/auth/**` or `**/*secret*` or `**/*token*` or `**/*credential*` or `**/middleware/**` or `**/session/**`: review your changes against arcana/cards/hermit.md (security) before finishing.
+- When adding a new dependency: review the change against arcana/cards/hermit.md (security).
+- Before opening a pull request: have the `justice` agent try to break the changes (correctness).
 - Before each commit: review the changes against arcana/cards/hierophant.md (convention).
 - Before opening a pull request: review the changes against arcana/cards/temperance.md (proportion).
 - When refactoring existing code: review the change against arcana/cards/temperance.md (proportion).
 - When adding a new dependency: review the change against arcana/cards/temperance.md (proportion).
+- Before opening a pull request: have the `strength` agent try to break the changes (resilience).
 - When working in files matching `**/client/**` or `**/clients/**` or `**/integrations/**` or `**/adapters/**` or `**/*gateway*`: review your changes against arcana/cards/strength.md (resilience) before finishing.
 - When adding a new dependency: review the change against arcana/cards/strength.md (resilience).
 - When updating a dependency: review the change against arcana/cards/strength.md (resilience).
-- Before opening a pull request: if the changes touch `**/*parser*` or `**/*upload*` or `**/handlers/**` or `**/routes/**` or `**/*quota*`, have the `devil` agent review them (adversarial abuse).
+- Before opening a pull request: have the `devil` agent try to break the changes (abuse resistance).
+- When working in files matching `**/*parser*` or `**/*upload*` or `**/handlers/**` or `**/routes/**` or `**/*quota*`: review your changes against arcana/cards/devil.md (abuse resistance) before finishing.
 
-Reviews report findings at four severities; act on them as follows:
+Reviews and audits report findings at four severities; act on them as follows:
 
 - note — mention it in your summary; do not act on it.
 - minor issue — fix it if the fix is cheap and local, otherwise flag it.
 - must-fix — fix it before declaring the work done.
 - blocker — stop and ask the user before proceeding.
 
-When several reviews apply to the same change, run their agents in
-parallel where available, then reconcile the findings into one verdict
+When several reviews or audits apply to the same change, run their agents
+in parallel where available, then reconcile the findings into one verdict
 with clear priorities — not a pile of contradictions.
 
-Some of these are adversarial audits that try to break the change. When
-you dispatch one, hand it only the diff and the task statement — never your
-own reasoning, plan, or why you think the code is correct. Its value comes
-from a clean-room view; do not contaminate it. Treat every reproduction it
-returns as real until you have disproven it.
-<!-- arcana:hash:sha256 30b92d87b8ea12c8be60f45ed8bf40a9ad7870231322a5d6b72aa6ed53ce2080 -->
+An audit is a review run at higher intensity: the same reviewer, dispatched
+to an isolated agent that tries to break the change and may run it to prove
+a break. When you dispatch one, hand it only the diff and the task statement
+— never your own reasoning, plan, or why you think the code is correct. Its
+value is the clean-room view; do not contaminate it. Treat every
+reproduction it returns as real until you have disproven it.
+<!-- arcana:hash:sha256 c23785437d19be0ec26df8120dcf97ccf6551a0ea9e3cd52de4b43cc9c152f53 -->

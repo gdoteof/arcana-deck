@@ -20,7 +20,7 @@ function fixture(deckYaml?: string) {
 }
 
 describe('gateEntries', () => {
-  it('gates glob-scoped pre-commit vigils and all pre-pr/pre-push vigils', () => {
+  it('gates glob-scoped pre-commit reviews and pre-pr audits, carrying the mode', () => {
     const entries = gateEntries(fixture());
     expect(entries).toEqual([
       {
@@ -28,14 +28,14 @@ describe('gateEntries', () => {
         domain: 'security',
         reference: 'arcana/cards/hermit.md',
         globs: ['**/auth/**'],
-        moments: ['pre-commit'],
+        moments: [{ at: 'pre-commit', mode: 'review' }],
       },
       {
         id: 'justice',
         domain: 'correctness',
         reference: 'arcana/cards/justice.md',
         globs: [],
-        moments: ['pre-pr'],
+        moments: [{ at: 'pre-pr', mode: 'audit' }],
       },
     ]);
   });

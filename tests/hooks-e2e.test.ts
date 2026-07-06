@@ -48,7 +48,6 @@ domain: correctness
 default_vigils:
   moments: [pre-pr]
 severity_default: portent
-requires_isolation: preferred
 ---
 Review the change set for correctness.
 `,
@@ -148,7 +147,7 @@ describe('gate.mjs', () => {
     stage('src/auth/login.ts', 'export const login = () => { return true; };\n');
     const result = gate('git commit -m "auth change 2"');
     expect(result.status).toBe(2);
-    expect(result.stderr).toContain('If the diff changed since the last review');
+    expect(result.stderr).toContain('If the diff changed since the last time, run it again');
     git('reset', 'src/auth/login.ts');
     rmSync(join(root, 'src/auth/login.ts'));
   });
@@ -166,14 +165,16 @@ describe('gate.mjs', () => {
     expect(gate('git push origin main').status).toBe(0);
   });
 
-  it('gates pull-request creation on the branch-diff review', () => {
+  it('gates pull-request creation on the branch-diff audit', () => {
     git('checkout', '-b', 'feature');
     stage('feature.ts', 'export const feature = 1;\n');
     git('commit', '-m', 'feature work');
 
     const blocked = gate('gh pr create --title x');
     expect(blocked.status).toBe(2);
-    expect(blocked.stderr).toContain('correctness review');
+    // justice keeps its pre-pr vigil in audit mode → the message says so
+    expect(blocked.stderr).toContain('correctness adversarial audit');
+    expect(blocked.stderr).toContain('try to break the branch diff');
     expect(blocked.stderr).toContain('mark-review.mjs justice');
 
     expect(mark('justice').status).toBe(0);

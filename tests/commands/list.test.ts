@@ -23,7 +23,9 @@ describe('runList', () => {
     const out = setup();
     expect(out).toContain('Deck: 1 card(s), 1 rite(s), 2 conduct binding(s)');
     expect(out).toContain('Enforcement: claude hooks on, git hooks off');
-    expect(out).toContain('hermit (The Hermit, security) — globs: **/auth/**; moments: pre-commit; changes: dependency-add');
+    expect(out).toContain(
+      'hermit (The Hermit, security) — globs: **/auth/** (review); moments: pre-commit (review); changes: dependency-add (review)',
+    );
     expect(out).toContain('migration (pentacles) — binds to: schema');
     expect(out).toContain('Use when making any database schema change');
     expect(out).toContain('! Never commit credentials, tokens, or secrets.');
@@ -48,16 +50,16 @@ describe('runList', () => {
     expect(out).toContain('OVER BUDGET, build will fail');
   });
 
-  it('tags adversarial cards', () => {
+  it('shows the mode of each moment, including an audit at pre-pr', () => {
     const reg = makeTree({
       'cards/devil.md':
-        '---\nid: devil\ntitle: The Devil\ndomain: abuse\nseverity_default: portent\nrequires_isolation: preferred\ntools: execute\nposture: adversarial\ndefault_vigils:\n  moments: [pre-pr]\n---\nBreak it.\n',
+        '---\nid: devil\ntitle: The Devil\ndomain: abuse\nseverity_default: portent\ndefault_vigils:\n  moments: [pre-pr]\n---\nBreak it.\n',
       'precepts.md': VALID_PRECEPTS,
     });
     const root = makeTree({ 'deck.yaml': 'version: 1\ncards:\n  - id: devil\n' });
     cleanups.push(reg, root);
     const out = runList(root, { version: '0.0.0-test', registryDir: reg });
-    expect(out).toContain('devil (The Devil, abuse) [adversarial] — moments: pre-pr');
+    expect(out).toContain('devil (The Devil, abuse) — moments: pre-pr (audit)');
   });
 
   it('lists cards without lore titles by id and domain alone', () => {

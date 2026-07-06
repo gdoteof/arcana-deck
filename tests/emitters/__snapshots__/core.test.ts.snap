@@ -25,20 +25,28 @@ Before starting a non-trivial task, read arcana/precepts.md and follow it.
 
 - When making any database schema change, migration, or altering table structure: read and follow arcana/rites/migration.md before starting.
 
-## Required reviews
+## Required reviews and audits
 
 - Before each commit: if the changes touch \`**/auth/**\`, review them against arcana/cards/hermit.md (security).
 - When adding a new dependency: review the change against arcana/cards/hermit.md (security).
-- Before opening a pull request: review the changes against arcana/cards/justice.md (correctness).
+- Before opening a pull request: have the \`justice\` agent try to break the changes (correctness).
 
-Reviews report findings at four severities; act on them as follows:
+Reviews and audits report findings at four severities; act on them as follows:
 
 - note — mention it in your summary; do not act on it.
 - minor issue — fix it if the fix is cheap and local, otherwise flag it.
 - must-fix — fix it before declaring the work done.
 - blocker — stop and ask the user before proceeding.
 
-When several reviews apply to the same change, reconcile their findings and
-present one verdict with clear priorities — not a pile of contradictions.
+When several reviews or audits apply to the same change, run their agents
+in parallel where available, then reconcile the findings into one verdict
+with clear priorities — not a pile of contradictions.
+
+An audit is a review run at higher intensity: the same reviewer, dispatched
+to an isolated agent that tries to break the change and may run it to prove
+a break. When you dispatch one, hand it only the diff and the task statement
+— never your own reasoning, plan, or why you think the code is correct. Its
+value is the clean-room view; do not contaminate it. Treat every
+reproduction it returns as real until you have disproven it.
 "
 `;

@@ -6,10 +6,8 @@ export interface CoreOptions {
   version: string;
   /** Conduct binding texts that have an emitted hook mirror; marked as enforced. */
   gatedTexts: ReadonlySet<string>;
-  /** Ids of cards emitted as subagents; their routing lines dispatch the agent. */
-  agentIds: ReadonlySet<string>;
-  /** Ids of adversarial-audit agents; triggers the clean-room dispatch note. */
-  adversarialIds: ReadonlySet<string>;
+  /** True when any vigil is bound in audit mode; adds the clean-room contract. */
+  hasAudits: boolean;
 }
 
 /**
@@ -53,37 +51,37 @@ export function emitCore(project: Project, options: CoreOptions): string {
   }
 
   if (project.cards.length > 0) {
-    parts.push('', '## Required reviews', '');
+    parts.push('', '## Required reviews and audits', '');
     for (const card of project.cards) {
-      parts.push(...cardRoutingLines(card, options.agentIds));
+      parts.push(...cardRoutingLines(card));
     }
-    const synthesis =
-      options.agentIds.size > 0
-        ? [
-            'When several reviews apply to the same change, run their agents in',
-            'parallel where available, then reconcile the findings into one verdict',
-            'with clear priorities — not a pile of contradictions.',
-          ]
-        : [
-            'When several reviews apply to the same change, reconcile their findings and',
-            'present one verdict with clear priorities — not a pile of contradictions.',
-          ];
+    const synthesis = options.hasAudits
+      ? [
+          'When several reviews or audits apply to the same change, run their agents',
+          'in parallel where available, then reconcile the findings into one verdict',
+          'with clear priorities — not a pile of contradictions.',
+        ]
+      : [
+          'When several reviews apply to the same change, reconcile their findings and',
+          'present one verdict with clear priorities — not a pile of contradictions.',
+        ];
     parts.push(
       '',
-      'Reviews report findings at four severities; act on them as follows:',
+      'Reviews and audits report findings at four severities; act on them as follows:',
       '',
       ...severityContractLines(),
       '',
       ...synthesis,
     );
-    if (options.adversarialIds.size > 0) {
+    if (options.hasAudits) {
       parts.push(
         '',
-        'Some of these are adversarial audits that try to break the change. When',
-        'you dispatch one, hand it only the diff and the task statement — never your',
-        'own reasoning, plan, or why you think the code is correct. Its value comes',
-        'from a clean-room view; do not contaminate it. Treat every reproduction it',
-        'returns as real until you have disproven it.',
+        'An audit is a review run at higher intensity: the same reviewer, dispatched',
+        'to an isolated agent that tries to break the change and may run it to prove',
+        'a break. When you dispatch one, hand it only the diff and the task statement',
+        '— never your own reasoning, plan, or why you think the code is correct. Its',
+        'value is the clean-room view; do not contaminate it. Treat every',
+        'reproduction it returns as real until you have disproven it.',
       );
     }
   }

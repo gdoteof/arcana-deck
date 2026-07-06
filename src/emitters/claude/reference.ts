@@ -11,12 +11,14 @@ export interface EmittedFile {
 }
 
 function emitCardReference(card: ResolvedCard, version: string): EmittedFile {
+  // The shared reference is the read-only review form; audit agents carry their
+  // own audit-framed copy inline.
   const content = [
     generatorNotice(version),
     '',
     `# ${cardReviewTitle(card)}`,
     '',
-    buildChecklist(card),
+    buildChecklist(card, 'review'),
   ].join('\n');
   return { path: cardReferencePath(card), content: `${content}\n` };
 }

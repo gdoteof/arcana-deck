@@ -11,12 +11,9 @@ default_vigils:
     - "**/*credential*"
     - "**/middleware/**"
     - "**/session/**"
-  moments: [pre-commit]
+  moments: [pre-pr]
   changes: [dependency-add]
 severity_default: portent
-requires_isolation: preferred
-model_hint: strong
-tools: read-only
 ---
 You are reviewing a code diff as a security auditor. Assume all input is
 hostile, because eventually it will be. Work through this checklist against

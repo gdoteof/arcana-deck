@@ -5,7 +5,7 @@ import { ArcanaError } from '../errors.js';
 import { parseCard, type Card } from '../schema/card.js';
 import { parseDeck, type Deck } from '../schema/deck.js';
 import { parseRite, type Rite } from '../schema/rite.js';
-import type { ChangeType, Vigils } from '../types.js';
+import { normalizeMoment, type ChangeType, type Vigils } from '../types.js';
 
 export const DECK_FILENAME = 'deck.yaml';
 
@@ -151,7 +151,7 @@ export function loadProject(root: string, options: LoadOptions = {}): Project {
     const defaults = card.meta.default_vigils;
     const vigils: Vigils = {
       globs: entry.vigils?.globs ?? defaults.globs,
-      moments: entry.vigils?.moments ?? defaults.moments,
+      moments: (entry.vigils?.moments ?? defaults.moments).map(normalizeMoment),
       changes: entry.vigils?.changes ?? defaults.changes,
     };
     return { card, vigils };

@@ -17,7 +17,10 @@ export const gates = [
       "**/session/**"
     ],
     "moments": [
-      "pre-commit"
+      {
+        "at": "pre-pr",
+        "mode": "audit"
+      }
     ]
   },
   {
@@ -26,7 +29,10 @@ export const gates = [
     "reference": "arcana/cards/justice.md",
     "globs": [],
     "moments": [
-      "pre-pr"
+      {
+        "at": "pre-pr",
+        "mode": "audit"
+      }
     ]
   },
   {
@@ -35,12 +41,33 @@ export const gates = [
     "reference": "arcana/cards/temperance.md",
     "globs": [],
     "moments": [
-      "pre-pr"
+      {
+        "at": "pre-pr",
+        "mode": "review"
+      }
+    ]
+  },
+  {
+    "id": "strength",
+    "domain": "resilience",
+    "reference": "arcana/cards/strength.md",
+    "globs": [
+      "**/client/**",
+      "**/clients/**",
+      "**/integrations/**",
+      "**/adapters/**",
+      "**/*gateway*"
+    ],
+    "moments": [
+      {
+        "at": "pre-pr",
+        "mode": "audit"
+      }
     ]
   },
   {
     "id": "devil",
-    "domain": "adversarial abuse",
+    "domain": "abuse resistance",
     "reference": "arcana/cards/devil.md",
     "globs": [
       "**/*parser*",
@@ -50,8 +77,11 @@ export const gates = [
       "**/*quota*"
     ],
     "moments": [
-      "pre-pr"
+      {
+        "at": "pre-pr",
+        "mode": "audit"
+      }
     ]
   }
 ];
-// arcana:hash:sha256 d76cf82f1662aef819ae4c26fb40e6a774d0522eaea2813c75d2a02536eff104
+// arcana:hash:sha256 82e27f20f8c1ef3583dc56a34ff52638dbec4757aef48d1f2fc8e9be55f5a174

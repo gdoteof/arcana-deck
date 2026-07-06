@@ -15,21 +15,23 @@ function fixture(deckYaml?: string) {
   return project;
 }
 
+// Base fixture: hermit review (pre-commit + globs + dependency-add), justice audit (pre-pr).
 const BASE_OPTS = {
   version: FIXTURE_VERSION,
   gatedTexts: new Set<string>(),
-  agentIds: new Set<string>(),
-  adversarialIds: new Set<string>(),
+  hasAudits: true,
 };
 const GATED_OPTS = {
   ...BASE_OPTS,
   gatedTexts: new Set(['Never commit credentials, tokens, or secrets.']),
 };
+// A review-only deck (hermit alone) for the no-audit paths.
+const REVIEW_ONLY = 'version: 1\ncards:\n  - id: hermit\n';
+const REVIEW_OPTS = { ...BASE_OPTS, hasAudits: false };
 
 describe('emitCore', () => {
   it('matches the golden core emission', () => {
-    const core = emitCore(fixture(), BASE_OPTS);
-    expect(core).toMatchSnapshot();
+    expect(emitCore(fixture(), BASE_OPTS)).toMatchSnapshot();
   });
 
   it('starts with the generator notice', () => {
@@ -51,30 +53,28 @@ describe('emitCore', () => {
     expect(core).toContain('stop\nand surface the conflict — do not break the rule.');
   });
 
-  it('instructs one reconciled verdict when several reviews fire together', () => {
-    const core = emitCore(fixture(), BASE_OPTS);
-    expect(core).toContain('reconcile their findings');
-    expect(core).toContain('not a pile of contradictions');
-  });
-
   it('marks critical conduct as gated only when gates are emitted', () => {
     const ungated = emitCore(fixture(), BASE_OPTS);
     expect(ungated).not.toContain('commit gate');
     const gated = emitCore(fixture(), GATED_OPTS);
-    expect(gated).toContain('- Never commit credentials, tokens, or secrets. (a commit gate enforces this)');
+    expect(gated).toContain(
+      '- Never commit credentials, tokens, or secrets. (a commit gate enforces this)',
+    );
     expect(gated).not.toContain('documented. (a commit gate enforces this)');
   });
 
-  it('emits routing lines, not checklists', () => {
+  it('routes review vigils to the checklist and audit vigils to the agent', () => {
     const core = emitCore(fixture(), BASE_OPTS);
+    // hermit: review-mode moment with globs, plus a change vigil
     expect(core).toContain(
       '- Before each commit: if the changes touch `**/auth/**`, review them against arcana/cards/hermit.md (security).',
     );
     expect(core).toContain(
-      '- Before opening a pull request: review the changes against arcana/cards/justice.md (correctness).',
-    );
-    expect(core).toContain(
       '- When adding a new dependency: review the change against arcana/cards/hermit.md (security).',
+    );
+    // justice: audit-mode moment dispatches the agent to break the change
+    expect(core).toContain(
+      '- Before opening a pull request: have the `justice` agent try to break the changes (correctness).',
     );
     expect(core).toContain(
       '- When making any database schema change, migration, or altering table structure: read and follow arcana/rites/migration.md before starting.',
@@ -86,16 +86,9 @@ describe('emitCore', () => {
 
   it('emits a continuous review line for glob-only vigils', () => {
     const project = fixture(
-      `version: 1
-cards:
-  - id: hermit
-    vigils:
-      globs: ["src/payments/**"]
-      moments: []
-      changes: []
-`,
+      'version: 1\ncards:\n  - id: hermit\n    vigils:\n      globs: ["src/payments/**"]\n      moments: []\n      changes: []\n',
     );
-    const core = emitCore(project, BASE_OPTS);
+    const core = emitCore(project, REVIEW_OPTS);
     expect(core).toContain(
       '- When working in files matching `src/payments/**`: review your changes against arcana/cards/hermit.md (security) before finishing.',
     );
@@ -114,34 +107,30 @@ cards:
     const root = makeTree({ 'deck.yaml': 'version: 1\n' });
     cleanups.push(registry, root);
     const project = loadProject(root, { registryDir: registry });
-    const core = emitCore(project, BASE_OPTS);
+    const core = emitCore(project, REVIEW_OPTS);
     expect(core).not.toContain('## Conduct');
     expect(core).not.toContain('## Required workflows');
     expect(core).not.toContain('## Required reviews');
     expect(core).toContain('## Working principles');
   });
 
-  it('adds the clean-room dispatch contract when an adversarial audit is present', () => {
-    const withAudit = {
-      ...BASE_OPTS,
-      agentIds: new Set(['devil']),
-      adversarialIds: new Set(['devil']),
-    };
-    const project = fixture('version: 1\ncards:\n  - id: hermit\n  - id: devil\n');
-    const core = emitCore(project, withAudit);
-    expect(core).toContain('adversarial audits that try to break the change');
-    expect(core).toContain('hand it only the diff and the task statement — never your');
-    expect(core).toContain('Treat every reproduction it');
+  it('explains the clean-room dispatch contract when audits are present', () => {
+    const core = emitCore(fixture(), BASE_OPTS);
+    expect(core).toContain('An audit is a review run at higher intensity');
+    expect(core).toContain('hand it only the diff and the task statement');
+    expect(core).toContain('Treat every');
+    expect(core).toContain('reconcile the findings into one verdict');
   });
 
-  it('omits the clean-room note when no adversarial audit is present', () => {
-    const core = emitCore(fixture(), BASE_OPTS);
+  it('omits the clean-room note and uses review-only synthesis when there are no audits', () => {
+    const core = emitCore(fixture(REVIEW_ONLY), REVIEW_OPTS);
     expect(core).not.toContain('clean-room');
-    expect(core).not.toContain('adversarial audits');
+    expect(core).not.toContain('An audit is a review');
+    expect(core).toContain('reconcile their findings and');
+    expect(core).toContain('not a pile of contradictions');
   });
 
   it('contains no lore vocabulary', () => {
-    const core = emitCore(fixture(), BASE_OPTS);
-    expect(findLoreWords(core)).toEqual([]);
+    expect(findLoreWords(emitCore(fixture(), BASE_OPTS))).toEqual([]);
   });
 });

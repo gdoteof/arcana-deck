@@ -27,9 +27,6 @@ default_vigils:
   moments: [pre-commit]
   changes: [dependency-add]
 severity_default: portent
-requires_isolation: preferred
-model_hint: strong
-tools: read-only
 ---
 You are reviewing a code diff as a security auditor.
 

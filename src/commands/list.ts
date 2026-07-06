@@ -1,6 +1,6 @@
 import { checkBudget } from '../compiler/budget.js';
 import { stamp } from '../compiler/hash.js';
-import { agentCards } from '../emitters/claude/agents.js';
+import { auditCards } from '../emitters/claude/agents.js';
 import { emitCore } from '../emitters/claude/core.js';
 import { gatedBindingTexts } from '../emitters/claude/hooks.js';
 import { loadProject, type LoadOptions, type ResolvedCard, type ResolvedRite } from '../loader/index.js';
@@ -12,17 +12,18 @@ export interface ListOptions extends LoadOptions {
 function describeVigils(card: ResolvedCard): string {
   const { globs, moments, changes } = card.vigils;
   const parts: string[] = [];
-  if (globs.length > 0) parts.push(`globs: ${globs.join(', ')}`);
-  if (moments.length > 0) parts.push(`moments: ${moments.join(', ')}`);
-  if (changes.length > 0) parts.push(`changes: ${changes.join(', ')}`);
+  if (globs.length > 0) parts.push(`globs: ${globs.join(', ')} (review)`);
+  if (moments.length > 0) {
+    parts.push(`moments: ${moments.map((m) => `${m.at} (${m.mode})`).join(', ')}`);
+  }
+  if (changes.length > 0) parts.push(`changes: ${changes.join(', ')} (review)`);
   return parts.length > 0 ? parts.join('; ') : 'no vigils';
 }
 
 function cardLine(card: ResolvedCard): string {
   const meta = card.card.meta;
   const lore = meta.title ? `${meta.title}, ` : '';
-  const tag = meta.posture === 'adversarial' ? ' [adversarial]' : '';
-  return `  ${meta.id} (${lore}${meta.domain})${tag} — ${describeVigils(card)}`;
+  return `  ${meta.id} (${lore}${meta.domain}) — ${describeVigils(card)}`;
 }
 
 function riteLines(rite: ResolvedRite): string[] {
@@ -56,15 +57,11 @@ export function runList(root: string, options: ListOptions): string {
 
   // Assembled directly (not via compile) so an over-budget deck still lists.
   const hooksEnabled = deck.enforcement.claude_hooks;
-  const agents = agentCards(project);
   const core = stamp(
     emitCore(project, {
       version: options.version,
       gatedTexts: hooksEnabled ? gatedBindingTexts(project) : new Set<string>(),
-      agentIds: new Set(agents.map((c) => c.card.meta.id)),
-      adversarialIds: new Set(
-        agents.filter((c) => c.card.meta.posture === 'adversarial').map((c) => c.card.meta.id),
-      ),
+      hasAudits: auditCards(project).length > 0,
     }),
   );
   const budget = checkBudget(core);

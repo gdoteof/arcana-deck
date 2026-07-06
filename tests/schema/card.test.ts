@@ -3,7 +3,7 @@ import { parseCard } from '../../src/schema/card.js';
 import { VALID_CARD } from '../helpers.js';
 
 describe('parseCard', () => {
-  it('parses a fully specified card', () => {
+  it('parses a persona card with all its fields', () => {
     const card = parseCard(VALID_CARD, 'hermit.md');
     expect(card.meta).toEqual({
       id: 'hermit',
@@ -16,13 +16,50 @@ describe('parseCard', () => {
         changes: ['dependency-add'],
       },
       severity_default: 'portent',
-      requires_isolation: 'preferred',
-      model_hint: 'strong',
-      tools: 'read-only',
-      posture: 'review',
     });
     expect(card.body).toContain('security auditor');
     expect(card.sourcePath).toBe('hermit.md');
+  });
+
+  it('carries no privilege or posture fields — a card is only a persona', () => {
+    const card = parseCard(VALID_CARD, 'hermit.md');
+    expect(card.meta).not.toHaveProperty('tools');
+    expect(card.meta).not.toHaveProperty('posture');
+    expect(card.meta).not.toHaveProperty('requires_isolation');
+    expect(card.meta).not.toHaveProperty('model_hint');
+  });
+
+  it('rejects privilege fields that used to live on the card', () => {
+    for (const field of ['tools: execute', 'posture: adversarial', 'model_hint: strong']) {
+      const text = `---\nid: c\ndomain: x\nseverity_default: omen\n${field}\n---\nB.\n`;
+      expect(() => parseCard(text, 'f.md'), field).toThrow(/[Uu]nrecognized/);
+    }
+  });
+
+  it('parses a moment mode override', () => {
+    const text = `---\nid: c\ndomain: x\nseverity_default: omen\ndefault_vigils:\n  moments:\n    - { at: pre-pr, mode: review }\n---\nB.\n`;
+    const card = parseCard(text, 'f.md');
+    expect(card.meta.default_vigils.moments).toEqual([{ at: 'pre-pr', mode: 'review' }]);
+  });
+
+  it('rejects an unknown mode in a moment override', () => {
+    const text = `---\nid: c\ndomain: x\nseverity_default: omen\ndefault_vigils:\n  moments:\n    - { at: pre-pr, mode: destroy }\n---\nB.\n`;
+    expect(() => parseCard(text, 'f.md')).toThrow(/review, audit/);
+  });
+
+  it('rejects an unknown moment in an override object', () => {
+    const text = `---\nid: c\ndomain: x\nseverity_default: omen\ndefault_vigils:\n  moments:\n    - { at: pre-merge, mode: review }\n---\nB.\n`;
+    expect(() => parseCard(text, 'f.md')).toThrow(/task-start, pre-commit, pre-push, pre-pr/);
+  });
+
+  it('rejects an override object missing its mode', () => {
+    const text = `---\nid: c\ndomain: x\nseverity_default: omen\ndefault_vigils:\n  moments:\n    - { at: pre-pr }\n---\nB.\n`;
+    expect(() => parseCard(text, 'f.md')).toThrow(/review, audit/);
+  });
+
+  it('rejects an unrecognized key in a moment override', () => {
+    const text = `---\nid: c\ndomain: x\nseverity_default: omen\ndefault_vigils:\n  moments:\n    - { at: pre-pr, mode: audit, when: always }\n---\nB.\n`;
+    expect(() => parseCard(text, 'f.md')).toThrow(/unrecognized key "when"/);
   });
 
   it('applies defaults for optional fields', () => {
@@ -31,9 +68,6 @@ describe('parseCard', () => {
       'plain.md',
     );
     expect(card.meta.default_vigils).toEqual({ globs: [], moments: [], changes: [] });
-    expect(card.meta.requires_isolation).toBe('none');
-    expect(card.meta.model_hint).toBe('cheap');
-    expect(card.meta.tools).toBe('read-only');
     expect(card.meta.arcanum).toBeUndefined();
   });
 
@@ -77,34 +111,12 @@ describe('parseCard', () => {
     ).toThrow(/checklist.*empty/);
   });
 
-  it('defaults posture to review', () => {
-    const card = parseCard(VALID_CARD, 'hermit.md');
-    expect(card.meta.posture).toBe('review');
-  });
-
-  it('accepts an adversarial card that is also isolated', () => {
-    const text = `---\nid: devil\ndomain: abuse\nseverity_default: portent\nrequires_isolation: preferred\ntools: execute\nposture: adversarial\n---\nBreak it.\n`;
-    const card = parseCard(text, 'devil.md');
-    expect(card.meta.posture).toBe('adversarial');
-    expect(card.meta.tools).toBe('execute');
-  });
-
-  it('rejects an adversarial card that is not isolated', () => {
-    const text = `---\nid: devil\ndomain: abuse\nseverity_default: portent\nposture: adversarial\n---\nBreak it.\n`;
-    expect(() => parseCard(text, 'devil.md')).toThrow(/adversarial cards must set requires_isolation/);
-  });
-
-  it('rejects an unknown posture', () => {
-    const text = `---\nid: c\ndomain: x\nseverity_default: omen\nposture: hostile\n---\nB.\n`;
-    expect(() => parseCard(text, 'f.md')).toThrow(/posture/);
-  });
-
-  it('rejects an invalid isolation value', () => {
+  it('rejects an empty checklist body regardless of vigils', () => {
     expect(() =>
       parseCard(
-        `---\nid: c\ndomain: x\nseverity_default: omen\nrequires_isolation: always\n---\nB.\n`,
+        `---\nid: c\ndomain: x\nseverity_default: omen\ndefault_vigils:\n  moments: [pre-pr]\n---\n\n`,
         'f.md',
       ),
-    ).toThrow(/requires_isolation/);
+    ).toThrow(/checklist.*empty/);
   });
 });

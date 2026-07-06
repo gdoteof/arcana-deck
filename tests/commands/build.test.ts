@@ -10,9 +10,22 @@ afterEach(() => {
   while (cleanups.length > 0) removeTree(cleanups.pop()!);
 });
 
+// justice keeps watch at pre-pr (audit mode) → an audit agent; hermit is
+// review-only (pre-commit + globs) → a rule, no agent. Same machinery, both modes.
+const JUSTICE = `---
+id: justice
+domain: correctness
+default_vigils:
+  moments: [pre-pr]
+severity_default: portent
+---
+Review the change set for correctness.
+`;
+
 function registry(): string {
   const dir = makeTree({
     'cards/09-hermit.md': VALID_CARD,
+    'cards/11-justice.md': JUSTICE,
     'rites/pentacles/migration.md': VALID_RITE,
     'precepts.md': VALID_PRECEPTS,
   });
@@ -20,7 +33,9 @@ function registry(): string {
   return dir;
 }
 
-function projectRoot(deck = 'version: 1\ncards:\n  - id: hermit\nrites:\n  - id: migration\n') {
+function projectRoot(
+  deck = 'version: 1\ncards:\n  - id: hermit\n  - id: justice\nrites:\n  - id: migration\n',
+) {
   const root = makeTree({ 'deck.yaml': deck });
   cleanups.push(root);
   return root;
@@ -29,7 +44,7 @@ function projectRoot(deck = 'version: 1\ncards:\n  - id: hermit\nrites:\n  - id:
 const OPTS = (reg: string) => ({ version: '0.0.0-test', registryDir: reg });
 
 const FULL_EMISSION = [
-  '.claude/agents/hermit.md',
+  '.claude/agents/justice.md',
   '.claude/arcana/bin/gate.mjs',
   '.claude/arcana/bin/mark-review.mjs',
   '.claude/arcana/guard-config.mjs',
@@ -38,6 +53,7 @@ const FULL_EMISSION = [
   '.claude/skills/migration/SKILL.md',
   'CLAUDE.md',
   'arcana/cards/hermit.md',
+  'arcana/cards/justice.md',
   'arcana/precepts.md',
   'arcana/rites/migration.md',
 ];
@@ -87,16 +103,17 @@ describe('runBuild', () => {
     writeFileSync(join(root, 'deck.yaml'), 'version: 1\nrites:\n  - id: migration\n');
     const summary = runBuild(root, OPTS(reg));
     expect(summary.deleted).toEqual([
-      '.claude/agents/hermit.md',
+      '.claude/agents/justice.md',
       '.claude/arcana/bin/gate.mjs',
       '.claude/arcana/bin/mark-review.mjs',
       '.claude/arcana/guard-config.mjs',
       '.claude/arcana/lib.mjs',
       '.claude/rules/hermit.md',
       'arcana/cards/hermit.md',
+      'arcana/cards/justice.md',
     ]);
     expect(existsSync(join(root, 'arcana/cards/hermit.md'))).toBe(false);
-    expect(existsSync(join(root, '.claude/agents/hermit.md'))).toBe(false);
+    expect(existsSync(join(root, '.claude/agents/justice.md'))).toBe(false);
   });
 
   it('never deletes unstamped files in owned directories', () => {

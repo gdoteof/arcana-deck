@@ -47,9 +47,10 @@ describe('the shipped registry', () => {
     const summary = runInit(root, OPTS);
     expect(summary.budget.ok).toBe(true);
     expect(summary.written).toContain('CLAUDE.md');
-    // core + 6 card refs + 4 rite refs + precepts + 3 rules + 4 skills
-    // + 3 agents + 4 hook files + settings.json
-    expect(summary.written.length).toBe(27);
+    // core + 6 card refs + 4 rite refs + precepts + 3 rules (hermit/strength/devil
+    // globs) + 4 skills + 4 audit agents (hermit/justice/strength/devil at pre-pr)
+    // + 4 hook files + settings.json
+    expect(summary.written.length).toBe(28);
     expect(runCheck(root, OPTS).ok).toBe(true);
   });
 
@@ -81,7 +82,8 @@ describe('the shipped registry', () => {
     expect(out).toContain('hierophant (The Hierophant, convention)');
     expect(out).toContain('temperance (Temperance, proportion)');
     expect(out).toContain('strength (Strength, resilience)');
-    expect(out).toContain('devil (The Devil, adversarial abuse) [adversarial]');
+    expect(out).toContain('devil (The Devil, abuse resistance) — globs:');
+    expect(out).toContain('moments: pre-pr (audit)');
     expect(out).toContain('migration (pentacles)');
     expect(out).toContain('bugfix (swords)');
     expect(out).toContain('refactor (swords)');

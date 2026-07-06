@@ -24,18 +24,42 @@ export type Severity = (typeof SEVERITIES)[number];
 export const SUITS = ['wands', 'cups', 'swords', 'pentacles'] as const;
 export type Suit = (typeof SUITS)[number];
 
-export const MODEL_HINTS = ['strong', 'cheap'] as const;
-export type ModelHint = (typeof MODEL_HINTS)[number];
-
-export const TOOL_PROFILES = ['read-only', 'execute', 'default'] as const;
-export type ToolProfile = (typeof TOOL_PROFILES)[number];
+/**
+ * How hard a persona is applied at a moment — the axis the community tunes.
+ * A persona (card) is the same in both; only the intensity differs.
+ * - review: read-only pass; the working agent self-reviews against the
+ *   checklist in context. Cheap.
+ * - audit: the persona is dispatched as an isolated subagent that tries to
+ *   break the change and may run it to prove a break. Expensive.
+ */
+export const MODES = ['review', 'audit'] as const;
+export type Mode = (typeof MODES)[number];
 
 /**
- * review — works through a checklist against the change.
- * adversarial — tries to break the change; findings need reproductions.
+ * The default intensity for each moment — the community-tunable rules. The one
+ * we are convinced of now: opening a pull request is an adversarial-audit
+ * moment. A deck can override any binding's mode.
  */
-export const POSTURES = ['review', 'adversarial'] as const;
-export type Posture = (typeof POSTURES)[number];
+export const MOMENT_DEFAULT_MODE: Record<Moment, Mode> = {
+  'task-start': 'review',
+  'pre-commit': 'review',
+  'pre-push': 'review',
+  'pre-pr': 'audit',
+  'post-implementation': 'review',
+};
+
+/** A moment vigil resolved to an intensity. */
+export interface MomentBinding {
+  at: Moment;
+  mode: Mode;
+}
+
+/** A moment vigil as authored: a bare moment (uses the default mode) or an override. */
+export type MomentSpec = Moment | { at: Moment; mode: Mode };
+
+export function normalizeMoment(spec: MomentSpec): MomentBinding {
+  return typeof spec === 'string' ? { at: spec, mode: MOMENT_DEFAULT_MODE[spec] } : spec;
+}
 
 /**
  * Lore severity names are human-facing only; agent-facing text uses these
@@ -76,10 +100,12 @@ export const MOMENT_PHRASES: Record<Moment, string> = {
   'post-implementation': 'After finishing an implementation, before presenting it',
 };
 
+/**
+ * Resolved vigils. Globs and changes are review-only (they fire often; an
+ * expensive audit there would be punishing). Moments carry an intensity.
+ */
 export interface Vigils {
   globs: string[];
-  moments: Moment[];
+  moments: MomentBinding[];
   changes: ChangeType[];
 }
-
-export const EMPTY_VIGILS: Vigils = { globs: [], moments: [], changes: [] };
