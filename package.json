@@ -1,0 +1,50 @@
+{
+  "name": "arcana-deck",
+  "version": "0.1.0",
+  "description": "An opinionated context library for Claude Code — compile a deck of rules, workflows, and reviewer personas into the files Claude Code natively consumes.",
+  "keywords": [
+    "claude-code",
+    "claude",
+    "context",
+    "agents",
+    "skills",
+    "code-review"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "arcana": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "registry"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\""
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^3.0.0",
+    "prettier": "^3.4.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
