@@ -28,6 +28,6 @@ export function compile(project: Project, options: CompileOptions): BuildOutput 
     { path: 'CLAUDE.md', content: core },
     ...emitReference(project, options.version).map((f) => ({ ...f, content: stamp(f.content) })),
   ];
-  files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  files.sort((a, b) => (a.path < b.path ? -1 : 1)); // paths are unique by construction
   return { files, budget };
 }
