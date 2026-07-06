@@ -130,7 +130,7 @@ export function loadProject(root: string, options: LoadOptions = {}): Project {
   const registryDir = options.registryDir ?? defaultRegistryDir();
   const deckPath = join(root, DECK_FILENAME);
   if (!existsSync(deckPath)) {
-    throw new ArcanaError(`no ${DECK_FILENAME} found in ${root} — run "arcana init" first`);
+    throw new ArcanaError(`no ${DECK_FILENAME} found in ${root} — run "arcanum-cli init" first`);
   }
   const deck = parseDeck(readFileSync(deckPath, 'utf8'), deckPath);
 

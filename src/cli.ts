@@ -10,7 +10,7 @@ import { cliVersion } from './version.js';
 const program = new Command();
 
 program
-  .name('arcana')
+  .name('arcanum-cli')
   .description('Compile a canonical deck into the files Claude Code natively consumes.')
   .version(cliVersion());
 
@@ -27,7 +27,7 @@ program
     console.log(
       `✓ deck installed — always-on core at ${summary.budget.lines}/${summary.budget.limit} lines`,
     );
-    console.log('Edit deck.yaml to tune it, then run "arcana build".');
+    console.log('Edit deck.yaml to tune it, then run "arcanum-cli build".');
   });
 
 program
@@ -74,7 +74,7 @@ program
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   if (err instanceof ArcanaError) {
-    console.error(`arcana: ${err.message}`);
+    console.error(`arcanum-cli: ${err.message}`);
   } else {
     console.error(err);
   }

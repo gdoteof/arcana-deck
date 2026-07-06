@@ -38,7 +38,7 @@ export function runCheck(root: string, options: CheckOptions): CheckSummary {
   for (const file of output.files) {
     const abs = join(root, file.path);
     if (!existsSync(abs)) {
-      problems.push({ path: file.path, kind: 'missing', detail: 'not built yet — run "arcana build"' });
+      problems.push({ path: file.path, kind: 'missing', detail: 'not built yet — run "arcanum-cli build"' });
       continue;
     }
     const actual = readFileSync(abs, 'utf8');
@@ -47,7 +47,7 @@ export function runCheck(root: string, options: CheckOptions): CheckSummary {
       problems.push({
         path: file.path,
         kind: 'stale',
-        detail: 'sources changed since the last build — run "arcana build"',
+        detail: 'sources changed since the last build — run "arcanum-cli build"',
       });
     } else {
       problems.push({
@@ -64,7 +64,7 @@ export function runCheck(root: string, options: CheckOptions): CheckSummary {
       problems.push({
         path: rel,
         kind: 'orphaned',
-        detail: 'generated file no longer in the deck — run "arcana build" to remove it',
+        detail: 'generated file no longer in the deck — run "arcanum-cli build" to remove it',
       });
     }
   }
@@ -75,7 +75,7 @@ export function runCheck(root: string, options: CheckOptions): CheckSummary {
     problems.push({
       path: SETTINGS_PATH,
       kind: 'stale',
-      detail: 'arcana hook entries are missing or outdated — run "arcana build"',
+      detail: 'arcana hook entries are missing or outdated — run "arcanum-cli build"',
     });
   }
 
