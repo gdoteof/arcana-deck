@@ -11,13 +11,24 @@
     "code-review"
   ],
   "license": "MIT",
+  "author": "gdoteof",
+  "homepage": "https://github.com/gdoteof/arcanum-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gdoteof/arcanum-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gdoteof/arcanum-cli/issues"
+  },
   "type": "module",
   "bin": {
     "arcanum-cli": "./dist/cli.js"
   },
   "files": [
     "dist",
-    "registry"
+    "registry",
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
@@ -29,7 +40,9 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\""
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build",
+    "publish:dry": "npm publish --dry-run"
   },
   "overrides": {
     "esbuild": "^0.28.1"
