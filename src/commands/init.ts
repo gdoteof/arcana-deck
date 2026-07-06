@@ -14,7 +14,7 @@ export function runInit(root: string, options: InitOptions): BuildSummary {
   const deckPath = join(root, DECK_FILENAME);
   if (existsSync(deckPath)) {
     throw new ArcanaError(
-      `${DECK_FILENAME} already exists in ${root} — edit it and run "arcana build" instead`,
+      `${DECK_FILENAME} already exists in ${root} — edit it and run "arcanum-cli build" instead`,
     );
   }
   const source = options.from ?? join(options.registryDir ?? defaultRegistryDir(), 'deck.default.yaml');

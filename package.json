@@ -13,7 +13,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "arcana": "./dist/cli.js"
+    "arcanum-cli": "./dist/cli.js"
   },
   "files": [
     "dist",

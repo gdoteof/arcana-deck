@@ -127,7 +127,7 @@ describe('loadProject', () => {
 
   it('errors when deck.yaml is missing', () => {
     const root = tree({});
-    expect(() => loadProject(root, { registryDir: registry() })).toThrow(/arcana init/);
+    expect(() => loadProject(root, { registryDir: registry() })).toThrow(/arcanum-cli init/);
   });
 
   it('errors on an unknown card id, listing known cards', () => {
