@@ -27,6 +27,11 @@ export function emitCore(project: Project, options: CoreOptions): string {
       const gate = binding.critical && options.gatedConduct ? ' (a commit gate enforces this)' : '';
       parts.push(`- ${binding.text}${gate}`);
     }
+    parts.push(
+      '',
+      'These rules are hard. If one conflicts with what you are asked to do, stop',
+      'and surface the conflict — do not break the rule.',
+    );
   }
 
   parts.push(
@@ -53,6 +58,9 @@ export function emitCore(project: Project, options: CoreOptions): string {
       'Reviews report findings at four severities; act on them as follows:',
       '',
       ...severityContractLines(),
+      '',
+      'When several reviews apply to the same change, reconcile their findings and',
+      'present one verdict with clear priorities — not a pile of contradictions.',
     );
   }
 

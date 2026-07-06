@@ -2,6 +2,8 @@ import { Command } from 'commander';
 import { ArcanaError } from './errors.js';
 import { runBuild } from './commands/build.js';
 import { formatCheckSummary, runCheck } from './commands/check.js';
+import { runInit } from './commands/init.js';
+import { runList } from './commands/list.js';
 import { cliVersion } from './version.js';
 
 const program = new Command();
@@ -10,6 +12,29 @@ program
   .name('arcana')
   .description('Compile a canonical deck into the files Claude Code natively consumes.')
   .version(cliVersion());
+
+program
+  .command('init')
+  .description('Set up a deck in this repository and run the first build.')
+  .option('--from <deck.yaml>', 'start from an existing deck file instead of the default deck')
+  .action((opts: { from?: string }) => {
+    const summary = runInit(process.cwd(), {
+      version: cliVersion(),
+      ...(opts.from !== undefined ? { from: opts.from } : {}),
+    });
+    for (const path of summary.written) console.log(`  wrote ${path}`);
+    console.log(
+      `✓ deck installed — always-on core at ${summary.budget.lines}/${summary.budget.limit} lines`,
+    );
+    console.log('Edit deck.yaml to tune it, then run "arcana build".');
+  });
+
+program
+  .command('list')
+  .description('Show the deck: cards, rites, vigils, conduct, and the context budget.')
+  .action(() => {
+    console.log(runList(process.cwd(), { version: cliVersion() }));
+  });
 
 program
   .command('build')

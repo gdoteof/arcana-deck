@@ -1,0 +1,61 @@
+import { checkBudget } from '../compiler/budget.js';
+import { stamp } from '../compiler/hash.js';
+import { emitCore } from '../emitters/claude/core.js';
+import { loadProject, type LoadOptions, type ResolvedCard, type ResolvedRite } from '../loader/index.js';
+
+export interface ListOptions extends LoadOptions {
+  version: string;
+}
+
+function describeVigils(card: ResolvedCard): string {
+  const { globs, moments, changes } = card.vigils;
+  const parts: string[] = [];
+  if (globs.length > 0) parts.push(`globs: ${globs.join(', ')}`);
+  if (moments.length > 0) parts.push(`moments: ${moments.join(', ')}`);
+  if (changes.length > 0) parts.push(`changes: ${changes.join(', ')}`);
+  return parts.length > 0 ? parts.join('; ') : 'no vigils';
+}
+
+function cardLine(card: ResolvedCard): string {
+  const meta = card.card.meta;
+  const lore = meta.title ? `${meta.title}, ` : '';
+  return `  ${meta.id} (${lore}${meta.domain}) — ${describeVigils(card)}`;
+}
+
+function riteLines(rite: ResolvedRite): string[] {
+  const binds = rite.changeTypes.length > 0 ? ` — binds to: ${rite.changeTypes.join(', ')}` : '';
+  return [`  ${rite.rite.meta.id} (${rite.rite.suit})${binds}`, `    ${rite.rite.meta.trigger}`];
+}
+
+/** Human-facing deck report: contents, vigils, and the always-on budget. */
+export function runList(root: string, options: ListOptions): string {
+  const project = loadProject(root, options);
+  const { deck } = project;
+  const lines: string[] = [];
+
+  lines.push(
+    `Deck: ${project.cards.length} card(s), ${project.rites.length} rite(s), ${deck.bindings.conduct.length} conduct binding(s)`,
+    `Enforcement: claude hooks ${deck.enforcement.claude_hooks ? 'on' : 'off'}, git hooks ${deck.enforcement.git_hooks ? 'on' : 'off'}`,
+  );
+  if (project.cards.length > 0) {
+    lines.push('', 'Cards', ...project.cards.map(cardLine));
+  }
+  if (project.rites.length > 0) {
+    lines.push('', 'Rites', ...project.rites.flatMap(riteLines));
+  }
+  if (deck.bindings.conduct.length > 0) {
+    lines.push(
+      '',
+      'Conduct (! = critical)',
+      ...deck.bindings.conduct.map((b) => `  ${b.critical ? '!' : '-'} ${b.text}`),
+    );
+  }
+
+  const core = stamp(emitCore(project, { version: options.version, gatedConduct: false }));
+  const budget = checkBudget(core);
+  lines.push(
+    '',
+    `Budget: always-on core ${budget.lines}/${budget.limit} lines${budget.ok ? '' : ' — OVER BUDGET, build will fail'}`,
+  );
+  return lines.join('\n');
+}

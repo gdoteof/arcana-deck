@@ -1,9 +1,16 @@
-export const MOMENTS = ['task-start', 'pre-commit', 'pre-push', 'pre-pr'] as const;
+export const MOMENTS = [
+  'task-start',
+  'pre-commit',
+  'pre-push',
+  'pre-pr',
+  'post-implementation',
+] as const;
 export type Moment = (typeof MOMENTS)[number];
 
 export const CHANGE_TYPES = [
   'schema',
   'dependency-add',
+  'dependency-update',
   'api-public',
   'config',
   'bugfix',
@@ -46,6 +53,7 @@ export const SEVERITY_CONTRACT: Record<Severity, string> = {
 export const CHANGE_TYPE_PHRASES: Record<ChangeType, string> = {
   schema: 'changing a database schema',
   'dependency-add': 'adding a new dependency',
+  'dependency-update': 'updating a dependency',
   'api-public': 'changing a public API',
   config: 'changing configuration files',
   bugfix: 'fixing a bug',
@@ -58,6 +66,7 @@ export const MOMENT_PHRASES: Record<Moment, string> = {
   'pre-commit': 'Before each commit',
   'pre-push': 'Before pushing',
   'pre-pr': 'Before opening a pull request',
+  'post-implementation': 'After finishing an implementation, before presenting it',
 };
 
 export interface Vigils {

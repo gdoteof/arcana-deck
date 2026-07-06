@@ -14,6 +14,9 @@ a rule below says to, not preemptively.
 - Never commit credentials, tokens, or secrets.
 - All public API changes are versioned and documented.
 
+These rules are hard. If one conflicts with what you are asked to do, stop
+and surface the conflict — do not break the rule.
+
 ## Working principles
 
 Before starting a non-trivial task, read arcana/precepts.md and follow it.
@@ -34,5 +37,8 @@ Reviews report findings at four severities; act on them as follows:
 - minor issue — fix it if the fix is cheap and local, otherwise flag it.
 - must-fix — fix it before declaring the work done.
 - blocker — stop and ask the user before proceeding.
+
+When several reviews apply to the same change, reconcile their findings and
+present one verdict with clear priorities — not a pile of contradictions.
 "
 `;

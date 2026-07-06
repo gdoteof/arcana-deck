@@ -34,6 +34,18 @@ describe('emitCore', () => {
     expect(core).toContain('- All public API changes are versioned and documented.');
   });
 
+  it('states the hard-rule contract: surface conflicts, never break a rule', () => {
+    const core = emitCore(fixture(), { version: FIXTURE_VERSION, gatedConduct: false });
+    expect(core).toContain('These rules are hard.');
+    expect(core).toContain('stop\nand surface the conflict — do not break the rule.');
+  });
+
+  it('instructs one reconciled verdict when several reviews fire together', () => {
+    const core = emitCore(fixture(), { version: FIXTURE_VERSION, gatedConduct: false });
+    expect(core).toContain('reconcile their findings');
+    expect(core).toContain('not a pile of contradictions');
+  });
+
   it('marks critical conduct as gated only when gates are emitted', () => {
     const ungated = emitCore(fixture(), { version: FIXTURE_VERSION, gatedConduct: false });
     expect(ungated).not.toContain('commit gate');
