@@ -66,6 +66,7 @@ export function runList(root: string, options: ListOptions): string {
       version: options.version,
       gatedTexts: hooksEnabled ? gatedBindingTexts(project) : new Set<string>(),
       hasAudits: auditCards(project).length > 0,
+      hasSynthesis: project.cards.some((c) => c.vigils.moments.some((m) => m.at === 'synthesis')),
     }),
   );
   const budget = checkBudget(core);

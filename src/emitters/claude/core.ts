@@ -8,6 +8,8 @@ export interface CoreOptions {
   gatedTexts: ReadonlySet<string>;
   /** True when any vigil is bound in audit mode; adds the clean-room contract. */
   hasAudits: boolean;
+  /** True when a card handles the "synthesis" moment; reconciliation defers to it. */
+  hasSynthesis: boolean;
 }
 
 /**
@@ -60,16 +62,33 @@ export function emitCore(project: Project, options: CoreOptions): string {
     for (const card of project.cards) {
       parts.push(...cardRoutingLines(card));
     }
-    const synthesis = options.hasAudits
-      ? [
-          'When several reviews or audits apply to the same change, run their agents',
-          'in parallel where available, then reconcile the findings into one verdict',
-          'with clear priorities — not a pile of contradictions.',
-        ]
-      : [
-          'When several reviews apply to the same change, reconcile their findings and',
-          'present one verdict with clear priorities — not a pile of contradictions.',
-        ];
+    // With a synthesis card (Judgement) in the deck, reconciliation is its job —
+    // its routing line above already directs it, so the core only notes parallel
+    // dispatch here and points at it, rather than duplicating the instruction.
+    let synthesis: string[];
+    if (options.hasSynthesis) {
+      synthesis = options.hasAudits
+        ? [
+            'When several reviews or audits apply to the same change, run their agents',
+            'in parallel where available, then reconcile their findings through the',
+            'synthesis review above into one prioritized verdict.',
+          ]
+        : [
+            'When several reviews apply to the same change, reconcile their findings',
+            'through the synthesis review above into one prioritized verdict.',
+          ];
+    } else {
+      synthesis = options.hasAudits
+        ? [
+            'When several reviews or audits apply to the same change, run their agents',
+            'in parallel where available, then reconcile the findings into one verdict',
+            'with clear priorities — not a pile of contradictions.',
+          ]
+        : [
+            'When several reviews apply to the same change, reconcile their findings and',
+            'present one verdict with clear priorities — not a pile of contradictions.',
+          ];
+    }
     parts.push(
       '',
       'Reviews and audits report findings at four severities; act on them as follows:',

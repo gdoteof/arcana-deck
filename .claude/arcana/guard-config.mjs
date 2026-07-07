@@ -3,7 +3,7 @@
 export const secretScan = true;
 export const forcePushBlocked = true;
 export const protectedBranches = ["main"];
-export const knownReviewIds = ["hermit","justice","hierophant","temperance","strength","devil","hanged-man"];
+export const knownReviewIds = ["hermit","justice","hierophant","temperance","strength","devil","hanged-man","judgement"];
 export const gates = [
   {
     "id": "hermit",
@@ -85,4 +85,4 @@ export const gates = [
     ]
   }
 ];
-// arcana:hash:sha256 542ddba427611d86879d9ebb37a9d5424158fe6bf270ff2d15e39fe681358211
+// arcana:hash:sha256 2d25d46642b100e35bfd41e9680e2ad53d40d9b7d85e26f676f5b18f63d24f68

@@ -15,6 +15,7 @@ cards:
   - id: strength
   - id: devil
   - id: hanged-man
+  - id: judgement
 rites:
   - id: migration
   - id: bugfix
