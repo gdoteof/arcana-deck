@@ -40,9 +40,12 @@ export function compile(project: Project, options: CompileOptions): BuildOutput 
       gatedBindingTexts(project).size > 0 ||
       project.deck.enforcement.protected_branches.length > 0);
   const hasAudits = auditCards(project).length > 0;
+  const hasSynthesis = project.cards.some((c) =>
+    c.vigils.moments.some((m) => m.at === 'synthesis'),
+  );
   const gatedTexts = hooksEnabled ? gatedBindingTexts(project) : new Set<string>();
 
-  const core = stamp(emitCore(project, { version, gatedTexts, hasAudits }));
+  const core = stamp(emitCore(project, { version, gatedTexts, hasAudits, hasSynthesis }));
   const budget = checkBudget(core);
   if (!budget.ok) {
     throw new ArcanaError(formatOverageReport(budget));

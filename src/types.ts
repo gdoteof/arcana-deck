@@ -5,6 +5,7 @@ export const MOMENTS = [
   'pre-pr',
   'post-implementation',
   'stalled',
+  'synthesis',
 ] as const;
 export type Moment = (typeof MOMENTS)[number];
 
@@ -49,6 +50,8 @@ export const MOMENT_DEFAULT_MODE: Record<Moment, Mode> = {
   'post-implementation': 'review',
   // A self-monitored condition, not a git event — reflective, always review.
   stalled: 'review',
+  // Meta: consumes the other lenses' findings in context — always review.
+  synthesis: 'review',
 };
 
 /** A moment vigil resolved to an intensity. */
@@ -102,6 +105,7 @@ export const MOMENT_PHRASES: Record<Moment, string> = {
   'pre-pr': 'Before opening a pull request',
   'post-implementation': 'After finishing an implementation, before presenting it',
   stalled: 'When a task stops converging',
+  synthesis: 'When several reviews or audits fire on the same change',
 };
 
 /**

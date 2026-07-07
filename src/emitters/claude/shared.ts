@@ -50,6 +50,14 @@ export function cardRoutingLines(card: ResolvedCard): string[] {
       );
       continue;
     }
+    if (at === 'synthesis') {
+      lines.push(
+        `- When more than one review or audit has produced findings on the same change: ` +
+          `reconcile them through ${cardReferencePath(card)} (${domain}) into one prioritized ` +
+          `verdict before deciding what to do.`,
+      );
+      continue;
+    }
     const act = mode === 'audit' ? auditWith : reviewAgainst;
     const hasGlobs = globs.length > 0 && mode === 'review';
     lines.push(

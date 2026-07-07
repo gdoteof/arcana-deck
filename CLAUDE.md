@@ -86,6 +86,7 @@ Before starting a non-trivial task, read arcana/precepts.md and follow it.
 - Before opening a pull request: have the `devil` agent try to break the changes (abuse resistance).
 - When working in files matching `**/*parser*` or `**/*upload*` or `**/handlers/**` or `**/routes/**` or `**/*quota*`: review your changes against arcana/cards/devil.md (abuse resistance) before finishing.
 - When a task stops converging (you are repeating an implement→check cycle without progress, or stuck failing the same test): step back and work through arcana/cards/hanged-man.md (convergence) before continuing.
+- When more than one review or audit has produced findings on the same change: reconcile them through arcana/cards/judgement.md (synthesis) into one prioritized verdict before deciding what to do.
 
 Reviews and audits report findings at four severities; act on them as follows:
 
@@ -95,8 +96,8 @@ Reviews and audits report findings at four severities; act on them as follows:
 - blocker — stop and ask the user before proceeding.
 
 When several reviews or audits apply to the same change, run their agents
-in parallel where available, then reconcile the findings into one verdict
-with clear priorities — not a pile of contradictions.
+in parallel where available, then reconcile their findings through the
+synthesis review above into one prioritized verdict.
 
 An audit is a review run at higher intensity: the same reviewer, dispatched
 to an isolated agent that tries to break the change and may run it to prove
@@ -115,4 +116,4 @@ You may merge a pull request yourself once you trust it — its required audits
 have run against the current diff with no unresolved must-fix or blocker
 finding. Merge through the pull request; never land changes by committing,
 merging, or pushing to a protected branch directly.
-<!-- arcana:hash:sha256 0357007fdb411cd0bb9f0a25efbaa2a1a08a60f80b187fa7c199e6f239e1295e -->
+<!-- arcana:hash:sha256 e959d96b65825236faebf97df4f00511ab8eb607e35691ab7d35d1392eb9daa4 -->

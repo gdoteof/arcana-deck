@@ -20,6 +20,7 @@ const BASE_OPTS = {
   version: FIXTURE_VERSION,
   gatedTexts: new Set<string>(),
   hasAudits: true,
+  hasSynthesis: false,
 };
 const GATED_OPTS = {
   ...BASE_OPTS,
@@ -93,6 +94,25 @@ describe('emitCore', () => {
       '- When a task stops converging (you are repeating an implement→check cycle without progress, or stuck failing the same test): step back and work through arcana/cards/hanged-man.md (convergence) before continuing.',
     );
     expect(core).not.toContain('review the changes against arcana/cards/hanged-man.md');
+  });
+
+  it('routes the "synthesis" moment to reconcile findings into a verdict', () => {
+    const project = fixture('version: 1\ncards:\n  - id: judgement\n');
+    const core = emitCore(project, { ...REVIEW_OPTS, hasSynthesis: true });
+    expect(core).toContain(
+      '- When more than one review or audit has produced findings on the same change: reconcile them through arcana/cards/judgement.md (synthesis) into one prioritized verdict before deciding what to do.',
+    );
+  });
+
+  it('defers the reconcile instruction to the synthesis card when one is present', () => {
+    const withJudge = fixture('version: 1\ncards:\n  - id: justice\n  - id: judgement\n');
+    const core = emitCore(withJudge, { ...BASE_OPTS, hasSynthesis: true });
+    expect(core).toContain('reconcile their findings through the\nsynthesis review above');
+    expect(core).not.toContain('reconcile the findings into one verdict');
+
+    // Without a synthesis card, the generic inline reconcile sentence stays.
+    const generic = emitCore(fixture(), BASE_OPTS);
+    expect(generic).toContain('reconcile the findings into one verdict');
   });
 
   it('emits a continuous review line for glob-only vigils', () => {

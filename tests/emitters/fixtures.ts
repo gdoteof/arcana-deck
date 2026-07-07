@@ -47,11 +47,21 @@ severity_default: portent
 ---
 Step back from a stuck task and decide whether to continue, change, or stop.
 `;
+  const judgement = `---
+id: judgement
+domain: synthesis
+default_vigils:
+  moments: [synthesis]
+severity_default: portent
+---
+Reconcile the reviews' findings into one prioritized verdict.
+`;
   const registry = makeTree({
     'cards/09-hermit.md': VALID_CARD,
     'cards/11-justice.md': justice,
     'cards/12-hanged-man.md': hangedMan,
     'cards/15-devil.md': DEVIL_CARD,
+    'cards/20-judgement.md': judgement,
     'rites/pentacles/migration.md': VALID_RITE,
     'precepts.md': VALID_PRECEPTS,
   });

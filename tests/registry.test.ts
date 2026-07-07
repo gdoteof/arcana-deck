@@ -47,10 +47,11 @@ describe('the shipped registry', () => {
     const summary = runInit(root, OPTS);
     expect(summary.budget.ok).toBe(true);
     expect(summary.written).toContain('CLAUDE.md');
-    // core + 7 card refs + 4 rite refs + precepts + 3 rules (hermit/strength/devil
+    // core + 8 card refs + 4 rite refs + precepts + 3 rules (hermit/strength/devil
     // globs) + 4 skills + 4 audit agents (hermit/justice/strength/devil at pre-pr)
-    // + 4 hook files + settings.json (hanged-man is a globless review card: ref only)
-    expect(summary.written.length).toBe(29);
+    // + 4 hook files + settings.json (hanged-man and judgement are globless review
+    // cards: reference only)
+    expect(summary.written.length).toBe(30);
     expect(runCheck(root, OPTS).ok).toBe(true);
   });
 
@@ -76,7 +77,7 @@ describe('the shipped registry', () => {
     cleanups.push(root);
     runInit(root, OPTS);
     const out = runList(root, OPTS);
-    expect(out).toContain('Deck: 7 card(s), 4 rite(s), 7 conduct binding(s)');
+    expect(out).toContain('Deck: 8 card(s), 4 rite(s), 7 conduct binding(s)');
     expect(out).toContain('hermit (The Hermit, security)');
     expect(out).toContain('justice (Justice, correctness)');
     expect(out).toContain('hierophant (The Hierophant, convention)');
@@ -85,6 +86,7 @@ describe('the shipped registry', () => {
     expect(out).toContain('devil (The Devil, abuse resistance) — globs:');
     expect(out).toContain('moments: pre-pr (audit)');
     expect(out).toContain('hanged-man (The Hanged Man, convergence) — moments: stalled (review)');
+    expect(out).toContain('judgement (Judgement, synthesis) — moments: synthesis (review)');
     expect(out).toContain('migration (pentacles)');
     expect(out).toContain('bugfix (swords)');
     expect(out).toContain('refactor (swords)');
